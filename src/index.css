@@ -1,0 +1,931 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* 
+
+import React, { useEffect, useState } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "@emotion/styled";
+import LoginPage from "./pages/LoginPage";
+import Home from "./pages/Home";
+import Candidate from "./pages/candidate";
+import { selectAuth, setUser } from "./redux/authSlice";
+import About from "./pages/About";
+import Lead from "./pages/lead";
+const GlobalStyle = styled.div`
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+`;
+const Container = styled.div`
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+`;
+const Sidebar = styled.aside`
+  background-color: #0056B3;
+  color: white;
+  width: 260px;
+  padding: 20px;
+  box-sizing: border-box;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+`;
+const SidebarItem = styled.div`
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover {
+    background-color: #003D82;
+  }
+`;
+const MainContent = styled.div`
+  width: 85%;
+  flex: 1;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+const Header = styled.header`
+  background-color: #007BFF;
+  padding: 10px;
+  text-align: center;
+  font-size: 24px;
+  color: white;
+  width: 100%;
+  position: sticky;
+  top: 0;
+`;
+const App = () => {
+  const dispatch = useDispatch();
+  const token = useSelector(selectAuth);
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (storedUser && storedUser.token) {
+      dispatch(setUser(storedUser));
+    }
+    setLoading(false);
+  }, [dispatch, storedUser]);
+  useEffect(() => {
+    if (!loading) {
+      if (!token && location.pathname !== "/login") {
+        navigate("/login", { replace: true });
+      } else if (token && location.pathname === "/login") {
+        navigate("/home", { replace: true });
+      }
+    }
+  }, [token, location.pathname, navigate, loading]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  return (
+    <GlobalStyle>
+      <Container>
+        {token && (
+          <Sidebar>
+            <SidebarItem onClick={() => navigate("/home")}>Home</SidebarItem>
+            <SidebarItem onClick={() => navigate("/candidates")}>
+              Candidates
+            </SidebarItem>
+            <SidebarItem onClick={() => navigate("/about")}>About</SidebarItem>
+            <SidebarItem onClick={() => navigate("/lead")}>Lead</SidebarItem>
+            <SidebarItem>Dummy Item 3</SidebarItem>
+          </Sidebar>
+        )}
+        <MainContent style={{ padding: token ? "0 20px 20px" : 0 }}>
+          {token && <Header>CRM Home Page</Header>}
+          <Routes>
+            <Route
+              path="/"
+              element={<Navigate to={token ? "/home" : "/login"} replace />}
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/candidates" element={<Candidate />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/lead" element={<Lead />} />
+          </Routes>
+        </MainContent>
+      </Container>
+    </GlobalStyle>
+  );
+};
+export default App; */
+
+/*  
+import React from "react";
+import { useAddLeadMutation } from "../../redux/api/lead/Lead";
+import { useForm, SubmitHandler } from "react-hook-form";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import { useNavigate } from "react-router-dom";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { useAddDocumentMutation } from "../../redux/api/document/Document";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import Rating from "@mui/material/Rating";
+import styled from "styled-components";
+
+const RootContainer = styled.div({
+  maxWidth: "800px",
+  margin: "0 auto",
+  padding: "20px",
+  boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.1)",
+  borderRadius: "8px",
+  backgroundColor: "#f9f9f9",
+});
+const RootDiv = styled.div({
+  flex: "1 1 45%",
+});
+const RootMedia = styled.div({
+  flex: "1 1 45%",
+});
+const RootUploadPdf = styled.div({
+  flex: "1 1 100%",
+  textAlign: "center",
+  marginTop: "20px",
+});
+const AddCandidate: React.FC = () => {
+  interface IFormInput {
+    first_name: string;
+    last_name: string;
+    email: string;
+    city: string;
+    lead_document: FileList;
+    last_education: string;
+    message: string;
+    phone: number;
+    addr: string;
+    state: string;
+    english_proficiency: number;
+    document_id: string;
+    media: { type: string; url: string }[];
+  }
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<IFormInput>();
+  const [addLead] = useAddLeadMutation();
+  const [addDocument] = useAddDocumentMutation();
+  const [documentChips, setDocumentChips] = React.useState<
+    { name: string; id: number }[]
+  >([]);
+  const [mediaItems, setMediaItems] = React.useState([{ type: "", url: "" }]);
+  const [stage, setStage] = React.useState<string>("");
+  const navigate = useNavigate();
+
+  const handleMediaTypeChange = (index: number, event: SelectChangeEvent) => {
+    const newMediaItems = [...mediaItems];
+    newMediaItems[index].type = event.target.value;
+    setMediaItems(newMediaItems);
+    console.log("Mediaitem", newMediaItems);
+  };
+
+  const handleMediaUrlChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newMediaItems = [...mediaItems];
+    newMediaItems[index].url = event.target.value;
+    setMediaItems(newMediaItems);
+  };
+  const addMediaItem = () => {
+    setMediaItems([...mediaItems, { type: "", url: "" }]);
+  };
+  const handleDeleteMediaChip = (chipId: any) => {
+    const updatedMediaItems = mediaItems.filter((item) => item !== chipId);
+    setMediaItems(updatedMediaItems);
+  };
+  const handleFileChange = async (event: any) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const documentIdsArray: number[] = [];
+      const chipsArray = [...documentChips];
+      for (let i = 0; i < event.target.files.length; i++) {
+        const formData = new FormData();
+        formData.append("image", event.target.files[i]);
+        try {
+          const resp: any = await addDocument(formData);
+          if (resp && resp.data && resp.data.id) {
+            documentIdsArray.push(resp.data.id);
+            chipsArray.push({
+              name: event.target.files[i].name,
+              id: resp.data.id,
+            });
+          }
+        } catch (error: any) {
+          console.error("Error uploading document:", error);
+        }
+      }
+      setValue("document_id", documentIdsArray.join(","));
+      setDocumentChips(chipsArray);
+    }
+  };
+
+  const handleDeleteChip = (chipId: number) => {
+    const updatedChips = documentChips.filter((chip) => chip.id !== chipId);
+    setDocumentChips(updatedChips);
+
+    const updatedDocumentIds = updatedChips.map((chip) => chip.id).join(",");
+    setValue("document_id", updatedDocumentIds);
+  };
+
+  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+    try {
+      const res = await addLead({
+        ...data,
+      }).unwrap();
+      console.log("res", res);
+      reset();
+      navigate("/home");
+    } catch (err) {
+      console.log("Error adding candidate:", err);
+    }
+  };
+
+  return (
+    <RootContainer>
+      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Add Lead</h1>
+
+      <form
+        style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <RootDiv style={{ flex: "1 1 45%" }}>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            First Name
+          </label>
+          <input
+            {...register("first_name", { required: "First Name is required" })}
+            type="text"
+            placeholder="First Name"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.first_name && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.first_name.message}
+            </p>
+          )}
+        </RootDiv>
+        <RootDiv>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Last Name
+          </label>
+          <input
+            {...register("last_name", { required: "Last Name is required" })}
+            type="text"
+            placeholder="Last Name"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.last_name && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.last_name.message}
+            </p>
+          )}
+        </RootDiv>
+        <RootDiv>
+          <label style={{ display: "block", marginBottom: "5px" }}>Email</label>
+          <input
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+                message: "Enter a valid email address",
+              },
+            })}
+            type="email"
+            placeholder="user@example.com"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.email && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.email.message}
+            </p>
+          )}
+        </RootDiv>
+        <RootDiv>
+          <label style={{ display: "block", marginBottom: "5px" }}>Phone</label>
+          <input
+            {...register("phone", {
+              required: "Phone number is required",
+              pattern: {
+                value: /^[0-9]{10}$/,
+                message: "Enter a valid 10-digit phone number",
+              },
+            })}
+            type="tel"
+            placeholder="Phone Number"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.phone && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.phone.message}
+            </p>
+          )}
+        </RootDiv>
+        <RootDiv>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Address
+          </label>
+          <input
+            {...register("addr", { required: "Address is required" })}
+            type="text"
+            placeholder="Address"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.addr && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.addr.message}
+            </p>
+          )}
+        </RootDiv>
+        <RootDiv>
+          <label style={{ display: "block", marginBottom: "5px" }}>City</label>
+          <input
+            {...register("city", { required: "City is required" })}
+            type="text"
+            placeholder="City"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.city && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.city.message}
+            </p>
+          )}
+        </RootDiv>
+        <RootDiv>
+          <label style={{ display: "block", marginBottom: "5px" }}>State</label>
+          <input
+            {...register("state", { required: "State is required" })}
+            type="text"
+            placeholder="State"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.state && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.state.message}
+            </p>
+          )}
+        </RootDiv>
+        <RootDiv>
+          <label style={{ display: "block", marginBottom: "5px" }}>
+            Message
+          </label>
+          <input
+            {...register("message", {
+              required: "message is required",
+            })}
+            type="text"
+            placeholder="Message"
+            style={{
+              width: "100%",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          {errors.message && (
+            <p style={{ color: "red", marginTop: "5px" }}>
+              {errors.message.message}
+            </p>
+          )}
+        </RootDiv>
+        <div style={{ flex: "1 1 100%" }}>
+          <h3>Media</h3>
+          {mediaItems.map((media, index) => (
+            <div
+              key={index}
+              style={{ display: "flex", gap: "10px", marginBottom: "10px" }}
+            >
+              <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel id={`media-type-label-${index}`}>Type</InputLabel>
+                <Select
+                  labelId={`media-type-label-${index}`}
+                  value={media.type}
+                  label="Type"
+                  onChange={(event) => handleMediaTypeChange(index, event)}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="Instagram">Instagram</MenuItem>
+                  <MenuItem value="Twitter">Twitter</MenuItem>
+                  <MenuItem value="Facebook">Facebook</MenuItem>
+                </Select>
+              </FormControl>
+              <input
+                type="text"
+                value={media.url}
+                onChange={(event) => handleMediaUrlChange(index, event)}
+                placeholder="URL"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addMediaItem}
+            style={{
+              marginTop: "10px",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              backgroundColor: "#e0e0e0",
+            }}
+          >
+            Add Media
+          </button>
+        </div>
+        <RootDiv>
+          <FormControl fullWidth>
+            <InputLabel id="stage-type-label">Stage</InputLabel>
+            <Select
+              labelId="stage-type-label"
+              value={stage}
+              label="Stage"
+              onChange={(event) => setStage(event.target.value)}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value="New">New</MenuItem>
+              <MenuItem value="Contacted">Contacted</MenuItem>
+              {/* Add more stage options as needed */
+/* </Select>
+          </FormControl>
+        </RootDiv>
+
+        <RootUploadPdf>
+          <h3>Upload Docunent(PDF)</h3>
+          <div style={{ flex: "1 1 45%" }}>
+            <Button
+              variant="contained"
+              component="label"
+              startIcon={<CloudUploadIcon />} // Using icon
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "10px 20px",
+                backgroundColor: "#007bff",
+                color: "#fff",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Choose Files
+              <input
+                {...register("lead_document")}
+                type="file"
+                accept=".pdf"
+                multiple
+                hidden
+                onChange={handleFileChange}
+              />
+            </Button>
+            <Stack direction="row" spacing={1} style={{ marginTop: "10px" }}>
+              {documentChips.map((chip) => (
+                <Chip
+                  key={chip.id}
+                  label={chip.name}
+                  onDelete={() => handleDeleteChip(chip.id)}
+                />
+              ))}
+            </Stack>
+            {errors.lead_document && (
+              <p style={{ color: "red" }}>{errors.lead_document.message}</p>
+            )}
+          </div>
+        </RootUploadPdf>
+        <button
+          type="submit"
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007bff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Add Lead
+        </button>
+      </form>
+    </RootContainer>
+  );
+};
+
+export default AddCandidate;  
+
+
+ */
+
+
+/* 
+import React from "react";
+import { useAddCandidateMutation } from "../../redux/api/candidate/Cadidate";
+import { useForm, SubmitHandler } from "react-hook-form";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import { useNavigate } from "react-router-dom";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { useAddDocumentMutation } from "../../redux/api/document/Document";
+import Rating from "@mui/material/Rating";
+
+const AddCandidate: React.FC = () => {
+  interface IFormInput {
+    first_name: string;
+    last_name: string;
+    email: string;
+    city: string;
+    document: FileList;
+    last_education: string;
+    message: string;
+    phone: number;
+    addr: string;
+    state: string;
+    english_proficiency: number;
+    document_id: string[];
+    media: { type: string; url: string }[];
+  }
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<IFormInput>();
+  const [addCandidate] = useAddCandidateMutation();
+  const [addDocument] = useAddDocumentMutation();
+  const [mediaItems, setMediaItems] = React.useState([{ type: "", url: "" }]);
+  const navigate = useNavigate();
+
+  const handleMediaTypeChange = (index: number, event: SelectChangeEvent) => {
+    const newMediaItems = [...mediaItems];
+    newMediaItems[index].type = event.target.value;
+    setMediaItems(newMediaItems);
+  };
+
+  const handleMediaUrlChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newMediaItems = [...mediaItems];
+    newMediaItems[index].url = event.target.value;
+    setMediaItems(newMediaItems);
+  };
+
+  const addMediaItem = () => {
+    setMediaItems([...mediaItems, { type: "", url: "" }]);
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files?.length) {
+      const formData = new FormData();
+      Array.from(event.target.files).forEach((file) => {
+        formData.append("images", file); // Adjust 'images' to match your backend requirement
+      });
+
+      try {
+        const resp = await addDocument(formData).unwrap();
+        const documentIds = resp.map((doc: { id: string }) => doc.id);
+        setValue("document_id", documentIds);
+      } catch (err) {
+        console.error("Error uploading documents:", err);
+      }
+    }
+  };
+
+  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+    try {
+      const res = await addCandidate({
+        ...data,
+      }).unwrap();
+      reset();
+      navigate("/home");
+    } catch (err) {
+      console.log("Error adding candidate:", err);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        maxWidth: "800px",
+        margin: "0 auto",
+        padding: "20px",
+        boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.1)",
+        borderRadius: "8px",
+        backgroundColor: "#f9f9f9",
+      }}
+    >
+      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Add Lead</h1>
+      <form
+        style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        {/* Rest of your form fields */
+/*         
+        <div style={{ flex: "1 1 100%" }}>
+          <h3>Media</h3>
+          {mediaItems.map((media, index) => (
+            <div
+              key={index}
+              style={{ display: "flex", gap: "10px", marginBottom: "10px" }}
+            >
+              <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel id={`media-type-label-${index}`}>Type</InputLabel>
+                <Select
+                  labelId={`media-type-label-${index}`}
+                  value={media.type}
+                  label="Type"
+                  onChange={(event) => handleMediaTypeChange(index, event)}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="Instagram">Instagram</MenuItem>
+                  <MenuItem value="Twitter">Twitter</MenuItem>
+                  <MenuItem value="Facebook">Facebook</MenuItem>
+                </Select>
+              </FormControl>
+              <input
+                type="text"
+                value={media.url}
+                onChange={(event) => handleMediaUrlChange(index, event)}
+                placeholder="URL"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addMediaItem}
+            style={{
+              marginTop: "10px",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              backgroundColor: "#e0e0e0",
+            }}
+          >
+            Add Media
+          </button>
+        </div>
+        <div
+          style={{ flex: "1 1 100%", textAlign: "center", marginTop: "20px" }}
+        >
+          <div style={{ flex: "1 1 45%" }}>
+            <label style={{ display: "block", marginBottom: "5px" }}>
+              Upload Documents (PDF)
+            </label>
+            <input
+              {...register("document")}
+              type="file"
+              accept=".pdf"
+              multiple
+              onChange={handleFileChange}
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+            {errors.document && (
+              <p style={{ color: "red", marginTop: "5px" }}>
+                {errors.document.message}
+              </p>
+            )}
+          </div>
+          <button
+            type="submit"
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Add Lead
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default AddCandidate; */
+
+/* 
+<RootDiv>
+<label style={{ display: "block", marginBottom: "5px" }}>Stage</label>
+<FormControl
+  fullWidth
+  style={{
+    marginBottom: "20px",
+  }}
+>
+  <InputLabel id="stage-label">Stage</InputLabel>
+  <Select
+    labelId="stage-label"
+    {...register("status", { required: "Status is required" })}
+    label="Status"
+    defaultValue=""
+  >
+    <MenuItem value={1}>New</MenuItem>
+    <MenuItem value={0}>Contected</MenuItem>
+  </Select>
+</FormControl>
+{errors.status && (
+  <p style={{ color: "red", marginTop: "5px" }}>
+    {errors.status.message}
+  </p>
+)}
+</RootDiv>
+<RootDiv>
+<label style={{ display: "block", marginBottom: "5px" }}>
+  Is Dump?
+</label>
+<FormControl
+  fullWidth
+  style={{
+    marginBottom: "20px",
+  }}
+>
+  <Select
+    value={isDump ? "Yes" : "No"}
+    onChange={(e) => setIsDump(e.target.value === "Yes")}
+    label="Is Dump?"
+  >
+    <MenuItem value="Yes">Yes</MenuItem>
+    <MenuItem value="No">No</MenuItem>
+  </Select>
+</FormControl>
+</RootDiv>
+<RootMedia>
+<h3>Media</h3>
+{mediaItems.map((item, index) => (
+  <div key={index} style={{ marginBottom: "10px" }}>
+    <FormControl fullWidth style={{ marginBottom: "10px" }}>
+      <InputLabel>Media Type</InputLabel>
+      <Select
+        value={item.name}
+        onChange={(e) => handleMediaTypeChange(index, e)}
+        label="Media Type"
+      >
+        <MenuItem value="Instagram">Instagram</MenuItem>
+        <MenuItem value="Twitter">Twitter</MenuItem>
+        <MenuItem value="Facebook">Facebook</MenuItem>
+      </Select>
+    </FormControl>
+    <input
+      type="url"
+      placeholder="Media URL"
+      value={item.url}
+      onChange={(e) => handleMediaUrlChange(index, e)}
+      style={{
+        width: "100%",
+        padding: "10px",
+        borderRadius: "4px",
+        border: "1px solid #ccc",
+      }}
+    />
+    {mediaItems.length > 1 && (
+      <Button
+        style={{
+          marginTop: "10px",
+          marginBottom: "10px",
+        }}
+        variant="outlined"
+        color="secondary"
+        onClick={() => handleDeleteMediaChip(index)}
+      >
+        Delete Media
+      </Button>
+    )}
+  </div>
+))}
+<Button variant="contained" color="primary" onClick={addMediaItem}>
+  Add More Media
+</Button>
+</RootMedia>
+<RootUploadPdf>
+<Stack direction="row" alignItems="center" spacing={2}>
+  <Button
+    variant="contained"
+    component="label"
+    startIcon={<CloudUploadIcon />}
+  >
+    Upload Documents
+    <input
+      hidden
+      accept=".pdf"
+      multiple
+      type="file"
+      onChange={handleFileChange}
+    />
+  </Button>
+</Stack>
+<Stack
+  direction="row"
+  spacing={1}
+  style={{ flexWrap: "wrap", marginTop: "10px" }}
+>
+  {documentChips.map((chip) => (
+    <Chip
+      key={chip.id}
+      label={chip.name}
+      onDelete={() => handleDeleteChip(chip.id)}
+    />
+  ))}
+</Stack>
+</RootUploadPdf> */
