@@ -18,6 +18,7 @@ import axios from "axios";
 const RootContainer = styled.div({
   display: "flex",
   alignItems: "center",
+  flex: 1,
   justifyContent: "center",
 });
 
@@ -118,21 +119,7 @@ const Login = () => {
       setError(err.response?.data?.message || "Login failed");
     }
   };
-  console.log("object", errors);
 
-  // const onSubmit = async (data2: IFormInput) => {
-  //   try {
-  //     const res = await loginUser(data2).unwrap();
-  //     console.log(res);
-  //     setCookie("token", res.token);
-  //   } catch (err: any) {
-  //     console.log("Erorr", err); 
-  //     setError(err.data.detail);
-  //     navigate("/login");
-  //   }
-  //   console.log(data2);
-  // };
-  // console.log("sdff", error);
   return (
     <RootContainer>
       <RootChild>

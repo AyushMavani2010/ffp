@@ -12,6 +12,7 @@ const RootContainer = styled.div({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  flex: 1,
   height: "100vh",
   backgroundSize: "cover",
   backgroundPosition: "center",

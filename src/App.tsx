@@ -9,6 +9,8 @@ import {
 } from "react-router-dom";
 import Login from "./Page/Login";
 import Registration from "./Page/Registraion";
+import AddClient from "./Page/AddClient";
+import DashBorad from "./Page/dashboard";
 import { Cookies, useCookies } from "react-cookie";
 import { useEffect, useState } from "react";
 
@@ -46,13 +48,14 @@ const App = () => {
         display: "flex",
         height: "100vh",
         width: "100%",
-        justifyContent: "center",
       }}
     >
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/dashboard" element={<DashBorad />} />
+        <Route path="/addclient" element={<AddClient />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </div>
   );
