@@ -1,18 +1,12 @@
 /** @jsxImportSource @emotion/react */
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const RootContainer = styled.div({
   width: "100%",
@@ -117,11 +111,9 @@ const ViewAllButton = styled.button({
 const Dashboard = () => {
   const navigate = useNavigate();
   const [cookies, , removeCookie] = useCookies(["token"]);
-  const [clients, setClients] = useState([]);
-  const [visibleClients, setVisibleClients] = useState([]);
+  const [invoice, setInvoice] = useState([]);
+  const [visibleInvoice, setVisibleInvoice] = useState([]);
   const [viewAll, setViewAll] = useState(false);
-  const [client, setClient] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null);
 
   const handleLogout = () => {
     removeCookie("token");
@@ -130,10 +122,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/client")
+      .get("http://localhost:5000/invoice")
       .then((response) => {
-        setClients(response.data);
-        setVisibleClients(response.data.slice(0, 5));
+        setInvoice(response.data);
+        setVisibleInvoice(response.data.slice(0, 5));
       })
       .catch((error) => {
         console.error("Error fetching client data:", error);
@@ -142,35 +134,42 @@ const Dashboard = () => {
 
   const handleViewAll = () => {
     setViewAll(true);
-    setVisibleClients(clients);
+    setVisibleInvoice(invoice);
   };
 
-  const handleDeleteClient = (clientId: any) => {
+  const handleViewInvoice = (invoice: any) => {
+    navigate("/invoice", { state: { invoice } });
+  };
+
+  const handleDeleteInvoice = (invoiceId: any) => {
     axios
-      .delete(`http://localhost:5000/client/${clientId}`)
+      .delete(`http://localhost:5000/invoice/${invoiceId}`)
       .then((response) => {
-        setClient((prevInvoice) =>
-          prevInvoice.filter((client: any) => client.id !== clientId)
+        // Remove the invoice from the UI after successful deletion
+        setInvoice((prevInvoice) =>
+          prevInvoice.filter((invoice: any) => invoice.id !== invoiceId)
         );
-        setVisibleClients((prevVisible) =>
-          prevVisible.filter((client: any) => client.id !== clientId)
+        setVisibleInvoice((prevVisible) =>
+          prevVisible.filter((invoice: any) => invoice.id !== invoiceId)
         );
       })
       .catch((error) => {
         console.error("Error deleting invoice:", error);
       });
   };
+
   return (
     <RootContainer>
       <Header>
         <h1>Inventory</h1>
+
         <nav>
           <NavLinks>
             <li>
-              <a href="#">Clients</a>
+              <a href="/dashboard">Clients</a>
             </li>
             <li>
-              <a href="/invoicedashboard">Invoices</a>
+              <a href="#">Invoices</a>
             </li>
           </NavLinks>
         </nav>
@@ -180,34 +179,37 @@ const Dashboard = () => {
 
       <ContentSection>
         <TableHeader>
-          <h2>Client List</h2>
-          <AddClientButton onClick={() => navigate("/addclient")}>
-            Add Client
+          <h2>Invoice List</h2>
+          <AddClientButton onClick={() => navigate("/addinvoice")}>
+            Add Invoice
           </AddClientButton>
         </TableHeader>
 
         <ClientTable>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Company Name</th>
-              <th>Company Email</th>
-              <th>GST Number</th>
+              <th>Client</th>
+              <th>Invoice Date</th>
+              <th>Invoice Number</th>
+              <th>Due Date</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {visibleClients.map((client: any, index) => (
+            {visibleInvoice.map((invoice: any, index) => (
               <tr key={index}>
-                <td>{client.name}</td>
-                <td>{client.company}</td>
-                <td>{client.email}</td>
-                <td>{client.gstNumber}</td>
+                <td>{invoice.client}</td>
+                <td>{invoice.invoiceDate}</td>
+                <td>{invoice.invoiceNumber}</td>
+                <td>{invoice.dueDate}</td>
                 <td>
+                  <ActionButton onClick={() => handleViewInvoice(invoice)}>
+                    <VisibilityIcon />
+                  </ActionButton>
                   <ActionButton>
                     <EditIcon />
                   </ActionButton>
-                  <ActionButton onClick={() => handleDeleteClient(client.id)}>
+                  <ActionButton onClick={() => handleDeleteInvoice(invoice.id)}>
                     <DeleteIcon />
                   </ActionButton>
                 </td>
@@ -217,8 +219,8 @@ const Dashboard = () => {
         </ClientTable>
       </ContentSection>
 
-      {!viewAll && clients.length > 5 && (
-        <ViewAllButton onClick={handleViewAll}>View All Clients</ViewAllButton>
+      {!viewAll && invoice.length > 5 && (
+        <ViewAllButton onClick={handleViewAll}>View All Invoice</ViewAllButton>
       )}
     </RootContainer>
   );

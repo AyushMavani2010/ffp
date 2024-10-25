@@ -53,7 +53,7 @@ const AddClient = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (event: any) => {
-    event.preventDefault(); // Prevent form refresh
+    event.preventDefault();
 
     if (
       !email ||
