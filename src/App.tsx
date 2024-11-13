@@ -10,12 +10,16 @@ import {
 import Login from "./Page/Login";
 import Registration from "./Page/Registraion";
 import AddClient from "./Page/AddClient";
-import DashBorad from "./Page/dashboard";
+import DashBorad from "./Page/clients";
+import MainDashBoard from "./Page/MainDashBoard";
 import InvoiceDashBoard from "./Page/InvoiceDashBoard";
 import AddInvoice from "./Page/AddInvoice";
 import InvoicePage from "./Page/InvoicePage";
+import Clients from "./Page/clients";
 import { Cookies, useCookies } from "react-cookie";
 import { useEffect, useState } from "react";
+import EditClient from "./Page/EditClient";
+import EditInvoice from "./Page/EditInvoice";
 
 const App = () => {
   const [cookies] = useCookies(["token"]);
@@ -56,12 +60,15 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />
-        <Route path="/dashboard" element={<DashBorad />} />
+        <Route path="/clients" element={<Clients />} />
+        <Route path="/maindashboard" element={<MainDashBoard />} />
         <Route path="/invoicedashboard" element={<InvoiceDashBoard />} />
         <Route path="/addinvoice" element={<AddInvoice />} />
         <Route path="/invoice" element={<InvoicePage />} />
         <Route path="/addclient" element={<AddClient />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/editclient" element={<EditClient />} />
+        <Route path="/editinvoice/:invoiceId" element={<EditInvoice />} />
+        <Route path="*" element={<Navigate to="/maindashboard" replace />} />
       </Routes>
     </div>
   );

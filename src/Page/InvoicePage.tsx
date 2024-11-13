@@ -15,6 +15,7 @@ const InvoiceContainer = styled.div({
 const InvoiceHeader = styled.div({
   display: "flex",
   justifyContent: "space-between",
+  alignItems: "center",
   marginBottom: "20px",
   h2: {
     margin: 0,
@@ -61,9 +62,26 @@ const NoItemsMessage = styled.p({
   fontStyle: "italic",
 });
 
+const PrintButton = styled.button({
+  padding: "10px 20px",
+  backgroundColor: "#4c6ef5",
+  color: "white",
+  border: "none",
+  borderRadius: "5px",
+  cursor: "pointer",
+  fontSize: "16px",
+  ":hover": {
+    backgroundColor: "#3b5cb8",
+  },
+});
+
 const InvoicePage = () => {
   const location = useLocation();
   const { invoice } = location.state || {};
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <InvoiceContainer>
@@ -71,6 +89,7 @@ const InvoicePage = () => {
         <>
           <InvoiceHeader>
             <h2>Invoice Details</h2>
+            <PrintButton onClick={handlePrint}>Print Invoice</PrintButton>
           </InvoiceHeader>
 
           <InvoiceDetails>
@@ -106,7 +125,7 @@ const InvoicePage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoice.items.map((item:any, index:any) => (
+                  {invoice.items.map((item: any, index: any) => (
                     <tr key={index}>
                       <td>{item.itemName}</td>
                       <td>${item.amount}</td>

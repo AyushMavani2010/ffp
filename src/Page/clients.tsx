@@ -118,6 +118,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [cookies, , removeCookie] = useCookies(["token"]);
   const [clients, setClients] = useState([]);
+  const [updateClients, setUpdateClients] = useState([]);
   const [visibleClients, setVisibleClients] = useState([]);
   const [viewAll, setViewAll] = useState(false);
   const [client, setClient] = useState([]);
@@ -160,6 +161,12 @@ const Dashboard = () => {
         console.error("Error deleting invoice:", error);
       });
   };
+  const handleClientUpdate = (clientId: string) => {
+    const client = clients.find((client: any) => client.id === clientId);
+    if (client) {
+      navigate("/editclient", { state: { client } });
+    }
+  };
   return (
     <RootContainer>
       <Header>
@@ -167,7 +174,7 @@ const Dashboard = () => {
         <nav>
           <NavLinks>
             <li>
-              <a href="#">Clients</a>
+              <a href="/clients">Clients</a>
             </li>
             <li>
               <a href="/invoicedashboard">Invoices</a>
@@ -204,7 +211,7 @@ const Dashboard = () => {
                 <td>{client.email}</td>
                 <td>{client.gstNumber}</td>
                 <td>
-                  <ActionButton>
+                  <ActionButton onClick={() => handleClientUpdate(client.id)}>
                     <EditIcon />
                   </ActionButton>
                   <ActionButton onClick={() => handleDeleteClient(client.id)}>

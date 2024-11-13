@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { useNavigate } from "react-router-dom";
@@ -141,11 +140,13 @@ const Dashboard = () => {
     navigate("/invoice", { state: { invoice } });
   };
 
+  const handleEditInvoice = (invoiceId: any) => {
+    navigate(`/editinvoice/${invoiceId}`);
+  };
   const handleDeleteInvoice = (invoiceId: any) => {
     axios
       .delete(`http://localhost:5000/invoice/${invoiceId}`)
       .then((response) => {
-        // Remove the invoice from the UI after successful deletion
         setInvoice((prevInvoice) =>
           prevInvoice.filter((invoice: any) => invoice.id !== invoiceId)
         );
@@ -166,10 +167,10 @@ const Dashboard = () => {
         <nav>
           <NavLinks>
             <li>
-              <a href="/dashboard">Clients</a>
+              <a href="/clients">Clients</a>
             </li>
             <li>
-              <a href="#">Invoices</a>
+              <a href="/#">Invoices</a>
             </li>
           </NavLinks>
         </nav>
@@ -206,7 +207,7 @@ const Dashboard = () => {
                   <ActionButton onClick={() => handleViewInvoice(invoice)}>
                     <VisibilityIcon />
                   </ActionButton>
-                  <ActionButton>
+                  <ActionButton onClick={() => handleEditInvoice(invoice.id)}>
                     <EditIcon />
                   </ActionButton>
                   <ActionButton onClick={() => handleDeleteInvoice(invoice.id)}>
