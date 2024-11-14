@@ -6,34 +6,12 @@ import axios from "axios";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Header from "../components/Header";
 
 const RootContainer = styled.div({
   width: "100%",
   padding: "20px",
   backgroundColor: "#f5f5f5",
-});
-
-const Header = styled.header({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "10px 20px",
-  background: "linear-gradient(to right, #141e30, #243b55)",
-  color: "white",
-  h1: {
-    margin: 0,
-  },
-});
-
-const NavLinks = styled.ul({
-  display: "flex",
-  gap: "20px",
-  listStyle: "none",
-  a: {
-    color: "white",
-    textDecoration: "none",
-    fontWeight: "bold",
-  },
 });
 
 const LogoutButton = styled.button({
@@ -161,22 +139,7 @@ const Dashboard = () => {
 
   return (
     <RootContainer>
-      <Header>
-        <h1>Inventory</h1>
-
-        <nav>
-          <NavLinks>
-            <li>
-              <a href="/clients">Clients</a>
-            </li>
-            <li>
-              <a href="/#">Invoices</a>
-            </li>
-          </NavLinks>
-        </nav>
-
-        <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
-      </Header>
+      <Header />
 
       <ContentSection>
         <TableHeader>

@@ -44,7 +44,7 @@ const SubmitButton = styled.button`
   }
 `;
 
-const AddClient = () => {
+const AddCompany = () => {
   const navigate = useNavigate();
   const {
     control,
@@ -52,13 +52,10 @@ const AddClient = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data: any) => {
-    const { email, name, company, companyEmail, companyAddress, gstNumber } =
-      data;
+  const onSubmit = (data:any) => {
+    const { company, companyEmail, companyAddress, gstNumber } = data;
 
     const userData = {
-      email,
-      name,
       company,
       companyEmail,
       companyAddress,
@@ -66,7 +63,7 @@ const AddClient = () => {
     };
 
     axios
-      .post("http://localhost:5000/addclient", userData)
+      .post("http://localhost:5000/addcompany", userData)
       .then((response) => {
         if (response && response.data) {
           console.log(response.data.message);
@@ -90,52 +87,6 @@ const AddClient = () => {
         <Title>Add Client</Title>
 
         <Controller
-          name="email"
-          control={control}
-          defaultValue=""
-          rules={{
-            required: "Email is required",
-            pattern: {
-              value: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
-              message: "Invalid email format",
-            },
-          }}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              type="email"
-              label="Email"
-              error={!!errors.email}
-              helperText={
-                errors.email?.message ? String(errors.email?.message) : undefined
-              }
-              fullWidth
-              margin="normal"
-            />
-          )}
-        />
-
-        <Controller
-          name="name"
-          control={control}
-          defaultValue=""
-          rules={{ required: "Name is required" }}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              type="text"
-              label="Name"
-              error={!!errors.name}
-              helperText={
-                errors.name?.message ? String(errors.name?.message) : undefined
-              }
-              fullWidth
-              margin="normal"
-            />
-          )}
-        />
-
-        <Controller
           name="company"
           control={control}
           defaultValue=""
@@ -147,7 +98,9 @@ const AddClient = () => {
               label="Company Name"
               error={!!errors.company}
               helperText={
-                errors.company?.message ? String(errors.company?.message) : undefined
+                errors.company?.message
+                  ? String(errors.company?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -173,7 +126,9 @@ const AddClient = () => {
               label="Company Email"
               error={!!errors.companyEmail}
               helperText={
-                errors.companyEmail?.message ? String(errors.companyEmail?.message) : undefined
+                errors.companyEmail?.message
+                  ? String(errors.companyEmail?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -193,7 +148,9 @@ const AddClient = () => {
               label="Company Address"
               error={!!errors.companyAddress}
               helperText={
-                errors.companyAddress?.message ? String(errors.companyAddress?.message) : undefined
+                errors.companyAddress?.message
+                  ? String(errors.companyAddress?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -213,7 +170,9 @@ const AddClient = () => {
               label="GST Number"
               error={!!errors.gstNumber}
               helperText={
-                errors.gstNumber?.message ? String(errors.gstNumber?.message) : undefined
+                errors.gstNumber?.message
+                  ? String(errors.gstNumber?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -227,4 +186,4 @@ const AddClient = () => {
   );
 };
 
-export default AddClient;
+export default AddCompany;

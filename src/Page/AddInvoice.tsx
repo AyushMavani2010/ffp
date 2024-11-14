@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import {
   TextField,
@@ -60,16 +61,9 @@ const SubmitButton = styled.button`
 `;
 
 const AddInvoice = () => {
-  const [invoiceDate, setInvoiceDate] = useState<any>();
-  const [dueDate, setDueDate] = useState<any>();
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [clients, setClients] = useState([]);
-  const [selectedClient, setSelectedClient] = useState("");
-  const [itemName, setItemName] = useState("");
-  const [amount, setAmount] = useState<number>(0);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [totalAmount, setTotalAmount] = useState<number>(0);
-  const [items, setItems] = useState<any[]>([]);
+  const [clients, setClients] = React.useState([]);
+  const [items, setItems] = React.useState<any[]>([]);
+  const [totalAmount, setTotalAmount] = React.useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,34 +77,31 @@ const AddInvoice = () => {
       });
   }, []);
 
-  const handleAddItem = () => {
-    const totalItemCost = amount * quantity;
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
 
+  const handleAddItem = (data: any) => {
+    const totalItemCost = data.amount * data.quantity;
     setItems((prevItems) => [
       ...prevItems,
-      { itemName, amount, quantity, totalItemCost },
+      { itemName: data.itemName, amount: data.amount, quantity: data.quantity, totalItemCost },
     ]);
-
-    setTotalAmount(totalAmount + totalItemCost);
-
-    setItemName("");
-    setAmount(0);
-    setQuantity(1);
+    setTotalAmount((prevTotal) => prevTotal + totalItemCost);
+    setValue("itemName", "");
+    setValue("amount", 0);
+    setValue("quantity", 1);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!invoiceNumber || !selectedClient || !invoiceDate || !dueDate) {
-      alert("Please fill out all required fields.");
-      return;
-    }
-
+  const onSubmit = (data: any) => {
     const invoiceData = {
-      invoiceDate,
-      dueDate,
-      invoiceNumber,
-      client: selectedClient,
+      invoiceDate: data.invoiceDate,
+      dueDate: data.dueDate,
+      invoiceNumber: data.invoiceNumber,
+      client: data.selectedClient,
       totalAmount,
       items,
     };
@@ -136,77 +127,133 @@ const AddInvoice = () => {
 
   return (
     <RootContainer>
-      <FormContainer onSubmit={handleSubmit}>
+      <FormContainer onSubmit={handleSubmit(onSubmit)}>
         <Title>Add Invoice</Title>
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <RowContainer>
             <div>
-              <DatePicker
-                label="Invoice Date"
-                value={invoiceDate}
-                onChange={(newValue) => setInvoiceDate(newValue)}
+              <Controller
+                name="invoiceDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    label="Invoice Date"
+                    value={field.value || null}
+                    onChange={(newValue) => field.onChange(newValue)}
+                  />
+                )}
               />
             </div>
             <div>
-              <DatePicker
-                label="Due Date"
-                value={dueDate}
-                onChange={(newValue) => setDueDate(newValue)}
+              <Controller
+                name="dueDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    label="Due Date"
+                    value={field.value || null}
+                    onChange={(newValue) => field.onChange(newValue)}
+                  />
+                )}
               />
             </div>
           </RowContainer>
         </LocalizationProvider>
 
-        <TextField
-          label="Invoice Number"
-          placeholder="Invoice Number"
-          onChange={(e) => setInvoiceNumber(e.target.value)}
-          value={invoiceNumber}
-          required
-          fullWidth
-          margin="normal"
+        <Controller
+          name="invoiceNumber"
+          control={control}
+          defaultValue=""
+          rules={{ required: "Invoice Number is required" }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Invoice Number"
+              fullWidth
+              margin="normal"
+              error={!!errors.invoiceNumber}
+              helperText={
+                errors.invoiceNumber?.message ? String(errors.invoiceNumber?.message) : undefined
+              }
+            />
+          )}
         />
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="client-select-label">Client</InputLabel>
-          <Select
-            labelId="client-select-label"
-            value={selectedClient}
-            onChange={(e) => setSelectedClient(e.target.value)}
-            label="Client"
-            required
-          >
-            {clients.map((client: any) => (
-              <MenuItem key={client.id} value={client.name}>
-                {client.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Controller
+          name="selectedClient"
+          control={control}
+          rules={{ required: "Client is required" }}
+          render={({ field }) => (
+            <FormControl fullWidth margin="normal" error={!!errors.selectedClient}>
+              <InputLabel>Client</InputLabel>
+              <Select {...field} label="Client" required>
+                {clients.map((client: any) => (
+                  <MenuItem key={client.id} value={client.name}>
+                    {client.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+        />
 
         <RowContainer>
-          <TextField
-            label="Item Name"
-            placeholder="Item Name"
-            onChange={(e) => setItemName(e.target.value)}
-            value={itemName}
-            fullWidth
-            margin="normal"
+          <Controller
+            name="itemName"
+            control={control}
+            rules={{ required: "Item name is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Item Name"
+                fullWidth
+                margin="normal"
+                error={!!errors.itemName}
+                helperText={
+                  errors.itemName?.message ? String(errors.itemName?.message) : undefined
+                }
+              />
+            )}
           />
-          <TextField
-            label="Amount"
-            type="number"
-            onChange={(e) => setAmount(Number(e.target.value))}
-            value={amount}
-            margin="normal"
+
+          <Controller
+            name="amount"
+            control={control}
+            rules={{ required: "Amount is required", min: 0 }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Amount"
+                type="number"
+                margin="normal"
+                error={!!errors.amount}
+                helperText={
+                  errors.amount?.message ? String(errors.amount?.message) : undefined
+                }
+              />
+            )}
           />
-          <TextField
-            label="Quantity"
-            type="number"
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            value={quantity}
-            margin="normal"
+
+          <Controller
+            name="quantity"
+            control={control}
+            defaultValue={1}
+            rules={{ required: "Quantity is required", min: 1 }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Quantity"
+                type="number"
+                margin="normal"
+                error={!!errors.quantity}
+                helperText={
+                  errors.quantity?.message ? String(errors.quantity?.message) : undefined
+                }
+              />
+            )}
           />
         </RowContainer>
 
@@ -221,11 +268,7 @@ const AddInvoice = () => {
           <ul>
             {items.map((item, index) => (
               <li key={index}>
-                <b>itemName:</b>
-                {item.itemName} = <b> itemQunantity:</b>
-                {item.quantity} x <b> itemAmount:</b> {item.amount} ={" "}
-                <b>Total:</b>
-                {item.totalItemCost}
+                <b>Item Name:</b> {item.itemName} = <b>Quantity:</b> {item.quantity} x <b>Amount:</b> {item.amount} = <b>Total:</b> {item.totalItemCost}
               </li>
             ))}
           </ul>

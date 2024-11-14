@@ -61,7 +61,6 @@ const SubmitButton = styled.button`
 
 const EditInvoice = () => {
   const { invoiceId } = useParams();
-  const [invoice, setInvoice] = useState<any>(null);
   const [invoiceDate, setInvoiceDate] = useState<any>();
   const [dueDate, setDueDate] = useState<any>();
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -70,35 +69,6 @@ const EditInvoice = () => {
   const [items, setItems] = useState<any[]>([]);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    axios
-      .get(`http://localhost:5000/invoice/${invoiceId}`)
-      .then((response) => {
-        const invoiceData = response.data;
-        console.log(invoiceData);
-        setInvoice(invoiceData);
-        setInvoiceDate(invoiceData.invoiceDate);
-        setDueDate(invoiceData.dueDate);
-        setInvoiceNumber(invoiceData.invoiceNumber);
-        setSelectedClient(invoiceData.client);
-        setItems(invoiceData.items);
-        setTotalAmount(invoiceData.totalAmount);
-      })
-      .catch((error) => {
-        console.error("Error fetching invoice data:", error);
-      });
-
-    axios
-      .get("http://localhost:5000/client")
-      .then((response) => {
-        console.log(response.data);
-        setClients(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching client data:", error);
-      });
-  }, [invoiceId]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -120,7 +90,7 @@ const EditInvoice = () => {
     axios
       .put(`http://localhost:5000/invoice/${invoiceId}`, updatedInvoice)
       .then(() => {
-        navigate("/invoicedashboard");
+        navigate("/dashboard");
       })
       .catch((error) => {
         console.error("Error updating invoice:", error);
@@ -129,8 +99,6 @@ const EditInvoice = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      {" "}
-      {/* Add LocalizationProvider here */}
       <RootContainer>
         <FormContainer onSubmit={handleSubmit}>
           <Title>Edit Invoice</Title>
