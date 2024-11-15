@@ -71,7 +71,7 @@ const AddCompany = () => {
         } else {
           console.log("No response data");
         }
-      })
+      }) 
       .catch((error) => {
         if (error.response) {
           console.error(error.response.data.message);
@@ -84,7 +84,7 @@ const AddCompany = () => {
   return (
     <RootContainer>
       <FormContainer onSubmit={handleSubmit(onSubmit)}>
-        <Title>Add Client</Title>
+        <Title>Add Company</Title>
 
         <Controller
           name="company"

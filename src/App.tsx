@@ -26,11 +26,17 @@ const App = () => {
   const [cookies] = useCookies(["token"]);
   const navigate = useNavigate();
   const location = useLocation();
-  const [company, setCompany] = useState(null);
+  const [company, setCompany] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [companyNames, setCompanyNames] = useState<string[]>([]);
+  const [usernames, setUsernames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const token = cookies.token;
+  
+  // Store token in localStorage
   localStorage.setItem("token", token);
 
+  // Fetch companies and match with usernames
   useEffect(() => {
     if (token) {
       axios
@@ -40,7 +46,23 @@ const App = () => {
         .then((response) => {
           setCompany(response.data);
           setLoading(false);
-          if (response.data.length > 0) {
+
+          const companyData = response.data.map((comp: any) => comp.company);
+          setCompanyNames(companyData); // Store company names in state
+          localStorage.setItem("companyNames", JSON.stringify(companyData));
+
+          const storedUsernames = JSON.parse(
+            localStorage.getItem("usernames") || "[]"
+          );
+
+          setUsernames(storedUsernames); // Store usernames in state
+
+          // Check if there is any matching company
+          const matchingCompany = companyData.some((companyName: any) =>
+            storedUsernames.includes(companyName)
+          );
+
+          if (matchingCompany) {
             navigate("/dashboard", { replace: true });
           } else {
             navigate("/addcompany", { replace: true });
@@ -53,14 +75,32 @@ const App = () => {
         });
     } else {
       setLoading(false);
-      if (
-        location.pathname !== "/login" &&
-        location.pathname !== "/register"
-      ) {
+      if (location.pathname !== "/login" && location.pathname !== "/register") {
         navigate("/login", { replace: true });
       }
     }
   }, [token, navigate, location.pathname]);
+
+  // Fetch user data
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/users")
+      .then((response) => {
+        setUsers(response.data);
+
+        const usernamesData = response.data.map((user: any) => user.username);
+        setUsernames(usernamesData); // Store usernames in state
+        localStorage.setItem("usernames", JSON.stringify(usernamesData)); // Store usernames in localStorage
+      })
+      .catch((error) => {
+        console.error("Error fetching users:", error);
+      });
+  }, []);
+
+  console.log("Company Data:", company);
+  console.log("User Data:", users);
+  console.log("Company Names:", companyNames);
+  console.log("Usernames:", usernames);
 
   if (loading) {
     return <div>Loading...</div>;
