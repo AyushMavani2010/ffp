@@ -114,7 +114,11 @@ const Login = () => {
     try {
       const response = await axios.post("http://localhost:5000/login", data);
       setCookie("token", response.data.token);
-      navigate("/dashboard");
+  
+      // Navigate based on the redirectTo response from the backend
+      if (response.data.redirectTo) {
+        navigate(response.data.redirectTo);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     }

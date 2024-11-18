@@ -54,14 +54,15 @@ const AddCompany = () => {
 
   const onSubmit = (data:any) => {
     const { company, companyEmail, companyAddress, gstNumber } = data;
-
+    const userId = localStorage.getItem("userId");
     const userData = {
       company,
       companyEmail,
       companyAddress,
       gstNumber,
+      userId
     };
-
+    
     axios
       .post("http://localhost:5000/addcompany", userData)
       .then((response) => {

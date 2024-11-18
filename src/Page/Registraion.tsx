@@ -73,6 +73,8 @@ const Registraion = () => {
       .then((response) => {
         if (response && response.data) {
           console.log(response.data.message);
+          localStorage.setItem("userId", response.data.id);
+          console.log("userid", response.data.id);
           navigate("/login");
         } else {
           console.log("No response data");
