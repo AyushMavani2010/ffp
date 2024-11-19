@@ -13,13 +13,14 @@ import {
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers";
+import Header from "../components/Header";
+import { jwtDecode } from "jwt-decode";
 
-const RootContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-`;
+const RootContainer = styled.div({
+  width: "100%",
+  padding: "20px",
+  backgroundColor: "#f5f5f5",
+});
 
 const FormContainer = styled.form`
   display: flex;
@@ -105,7 +106,18 @@ const AddInvoice = () => {
       alert("Please fill out all required fields.");
       return;
     }
+    const token = localStorage.getItem("token");
 
+    let userId = "";
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        console.log("Decoded Token:", decodedToken);
+        userId = decodedToken.id;
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
     const invoiceData = {
       invoiceDate,
       dueDate,
@@ -113,6 +125,7 @@ const AddInvoice = () => {
       client: selectedClient,
       totalAmount,
       items,
+      userId,
     };
 
     axios
@@ -136,6 +149,7 @@ const AddInvoice = () => {
 
   return (
     <RootContainer>
+      <Header />
       <FormContainer onSubmit={handleSubmit}>
         <Title>Add Invoice</Title>
 

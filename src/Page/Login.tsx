@@ -114,8 +114,8 @@ const Login = () => {
     try {
       const response = await axios.post("http://localhost:5000/login", data);
       setCookie("token", response.data.token);
-  
-      // Navigate based on the redirectTo response from the backend
+      localStorage.setItem("userId", response.data.id);
+
       if (response.data.redirectTo) {
         navigate(response.data.redirectTo);
       }
@@ -207,36 +207,6 @@ const Login = () => {
             </div>
           </ChildDiv>
         </form>
-        <LoginWithOther>Login with Others</LoginWithOther>
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 20,
-            }}
-          >
-            <div>
-              <img src={Google} alt="Google" />
-            </div>
-            <LoginWithGoogle>Login with Google</LoginWithGoogle>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 20,
-              paddingTop: "10px",
-            }}
-          >
-            <div>
-              <img src={FaceBook} alt="FaceBook" />
-            </div>
-            <LoginWithGoogle>Login with FaceBook</LoginWithGoogle>
-          </div>
-        </div>
       </RootChild>
     </RootContainer>
   );

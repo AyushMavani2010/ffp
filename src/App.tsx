@@ -22,6 +22,7 @@ import InvoicePage from "./Page/InvoicePage";
 import AddCompany from "./Page/AddCompany";
 import EditClient from "./Page/EditClient";
 import EditInvoice from "./Page/EditInvoice";
+import { jwtDecode } from "jwt-decode";
 
 const App = () => {
   const [cookies] = useCookies(["token"]);
@@ -43,11 +44,11 @@ const App = () => {
       return null;
     }
   };
-
   useEffect(() => {
     const checkCompanyAndRedirect = async () => {
       setLoading(true);
-
+  
+      const token = localStorage.getItem("token");
       try {
         if (!token) {
           if (
@@ -57,13 +58,28 @@ const App = () => {
             navigate("/login", { replace: true });
           }
         } else {
-          const userId = localStorage.getItem("user_id");
-          const companyData = await fetchCompanyData(userId);
-
-          if (companyData && companyData.length > 0) {
-            setHasCompany(true);
+          const userId = (() => {
+            try {
+              const decodedToken: any = jwtDecode(token);
+              return decodedToken?.id || decodedToken?.userId;
+            } catch (error) {
+              console.error("Error decoding token:", error);
+              return null;
+            }
+          })();
+  
+          if (userId) {
+            const companyData = await fetchCompanyData(userId);
+            console.log("Company Data:", companyData);
+  
+            if (companyData && companyData.length > 0) {
+              setHasCompany(true);
+            } else {
+              setHasCompany(false);
+            }
           } else {
-            setHasCompany(false);
+            console.error("Invalid or missing userId in token.");
+            navigate("/login", { replace: true });
           }
         }
       } catch (error) {
@@ -72,20 +88,24 @@ const App = () => {
         setLoading(false);
       }
     };
-
+  
     checkCompanyAndRedirect();
-  }, [token, location.pathname, navigate]);
-
+  }, [location.pathname, navigate]);
+  
   useEffect(() => {
     if (!loading) {
       if (!token) {
-        if (location.pathname !== "/login" && location.pathname !== "/register") {
+        if (
+          location.pathname !== "/login" &&
+          location.pathname !== "/register"
+        ) {
           navigate("/login", { replace: true });
         }
       } else if (hasCompany) {
         if (
           location.pathname === "/login" ||
-          location.pathname === "/register"
+          location.pathname === "/register" ||
+          location.pathname === "/addcompany"
         ) {
           navigate("/dashboard", { replace: true });
         }
@@ -97,13 +117,7 @@ const App = () => {
     }
   }, [loading, token, hasCompany, location.pathname, navigate]);
 
-  const DebugRoutes = () => {
-    useEffect(() => {
-      console.log("Current Path:", location.pathname);
-    }, [location]);
-
-    return null;
-  };
+ 
 
   if (loading) {
     return <div>Loading...</div>;
@@ -117,7 +131,6 @@ const App = () => {
         width: "100%",
       }}
     >
-      <DebugRoutes />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />

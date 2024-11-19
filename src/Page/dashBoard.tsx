@@ -104,8 +104,6 @@ const Dashboard = () => {
   const [clients, setClients] = useState([]);
   const [updateClients, setUpdateClients] = useState([]);
   const [visibleClients, setVisibleClients] = useState([]);
-  const [viewAll, setViewAll] = useState(false);
-  const [viewAllInvoice, setViewAllInvoice] = useState(false);
   const [visibleInvoice, setVisibleInvoice] = useState([]);
   const [client, setClient] = useState([]);
   const [invoice, setInvoice] = useState([]);
@@ -138,16 +136,6 @@ const Dashboard = () => {
         console.error("Error fetching client data:", error);
       });
   }, []);
-
-  const handleViewAll = () => {
-    setViewAll(true);
-    setVisibleClients(clients);
-  };
-
-  const handleViewAllInvoice = () => {
-    setViewAllInvoice(true);
-    setVisibleInvoice(invoice);
-  };
 
   const handleViewInvoice = (invoice: any) => {
     navigate("/invoice", { state: { invoice } });
@@ -277,20 +265,6 @@ const Dashboard = () => {
           </ClientTable>
         </ContentSection>
       </Root>
-
-      <div style={{ display: "flex" }}>
-        {!viewAll && clients.length > 5 && (
-          <ViewAllButton onClick={handleViewAll}>
-            View All Clients
-          </ViewAllButton>
-        )}
-
-        {!viewAllInvoice && invoice.length > 5 && (
-          <ViewAllButton onClick={handleViewAllInvoice}>
-            View All Invoice
-          </ViewAllButton>
-        )}
-      </div>
     </RootContainer>
   );
 };

@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import { TextField } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 
@@ -52,33 +53,43 @@ const AddCompany = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data:any) => {
+  const onSubmit = async (data: any) => {
     const { company, companyEmail, companyAddress, gstNumber } = data;
-    const userId = localStorage.getItem("userId");
+
+    const token = localStorage.getItem("token");
+    let userId = "";
+
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        console.log("Decoded Token:", decodedToken);
+        userId = decodedToken.id;
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+    console.log(userId, "test test set set set ");
+
     const userData = {
       company,
       companyEmail,
       companyAddress,
       gstNumber,
-      userId
+      userId,
     };
-    
-    axios
-      .post("http://localhost:5000/addcompany", userData)
+
+    console.log("Submitting data:", userData);
+
+    await axios
+      .post("http://localhost:5000/addcompany", userData, {
+        headers: { "Content-Type": "application/json" },
+      })
       .then((response) => {
-        if (response && response.data) {
-          console.log(response.data.message);
-          navigate("/dashboard");
-        } else {
-          console.log("No response data");
-        }
-      }) 
+        console.log("Response:", response.data);
+        navigate("/dashboard");
+      })
       .catch((error) => {
-        if (error.response) {
-          console.error(error.response.data.message);
-        } else {
-          console.error("Error occurred:", error.message);
-        }
+        console.error("Error response:", error.response?.data || error.message);
       });
   };
 

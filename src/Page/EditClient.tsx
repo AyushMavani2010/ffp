@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import styled from "@emotion/styled";
 import { Input } from "@mui/material";
+import Header from "../components/Header";
 
-const RootContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-`;
+const RootContainer = styled.div({
+  width: "100%",
+  padding: "20px",
+  backgroundColor: "#f5f5f5",
+});
 
 const FormContainer = styled.form`
   display: flex;
@@ -47,7 +47,7 @@ const EditClient = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const clientData = location.state?.client || {};
-  
+
   const [formData, setFormData] = useState({
     name: clientData.name || "",
     company: clientData.company || "",
@@ -55,12 +55,12 @@ const EditClient = () => {
     gstNumber: clientData.gstNumber || "",
   });
 
-  const handleInputChange = (e:any) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleFormSubmit = (e:any) => {
+  const handleFormSubmit = (e: any) => {
     e.preventDefault();
 
     axios
@@ -77,9 +77,10 @@ const EditClient = () => {
 
   return (
     <RootContainer>
+      <Header />
       <FormContainer onSubmit={handleFormSubmit}>
         <Title>Edit Client</Title>
-        
+
         <Input
           type="text"
           name="name"

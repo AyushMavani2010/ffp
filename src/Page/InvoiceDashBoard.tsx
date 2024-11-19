@@ -14,15 +14,6 @@ const RootContainer = styled.div({
   backgroundColor: "#f5f5f5",
 });
 
-const LogoutButton = styled.button({
-  backgroundColor: "#6c63ff",
-  color: "white",
-  border: "none",
-  padding: "10px 20px",
-  borderRadius: "5px",
-  cursor: "pointer",
-});
-
 const ContentSection = styled.section({
   backgroundColor: "white",
   margin: "20px",
@@ -67,30 +58,32 @@ const ClientTable = styled.table({
   },
 });
 
-const ActionButton = styled.button({
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  padding: "5px",
+const PaginationContainer = styled.div({
+  display: "flex",
+  justifyContent: "center",
+  marginTop: "20px",
 });
 
-const ViewAllButton = styled.button({
-  display: "block",
-  margin: "20px auto",
-  padding: "10px 20px",
+const PageButton = styled.button({
+  margin: "0 5px",
+  padding: "5px 10px",
   backgroundColor: "#6c63ff",
   color: "white",
   border: "none",
   borderRadius: "5px",
   cursor: "pointer",
+  "&:disabled": {
+    backgroundColor: "#ccc",
+    cursor: "not-allowed",
+  },
 });
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [cookies, , removeCookie] = useCookies(["token"]);
-  const [invoice, setInvoice] = useState([]);
-  const [visibleInvoice, setVisibleInvoice] = useState([]);
-  const [viewAll, setViewAll] = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const invoicesPerPage = 5;
 
   const handleLogout = () => {
     removeCookie("token");
@@ -101,17 +94,23 @@ const Dashboard = () => {
     axios
       .get("http://localhost:5000/invoice")
       .then((response) => {
-        setInvoice(response.data);
-        setVisibleInvoice(response.data.slice(0, 5));
+        setInvoices(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching client data:", error);
+        console.error("Error fetching invoice data:", error);
       });
   }, []);
 
-  const handleViewAll = () => {
-    setViewAll(true);
-    setVisibleInvoice(invoice);
+  const totalPages = Math.ceil(invoices.length / invoicesPerPage);
+  const indexOfLastInvoice = currentPage * invoicesPerPage;
+  const indexOfFirstInvoice = indexOfLastInvoice - invoicesPerPage;
+  const currentInvoices = invoices.slice(
+    indexOfFirstInvoice,
+    indexOfLastInvoice
+  );
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
 
   const handleViewInvoice = (invoice: any) => {
@@ -121,15 +120,13 @@ const Dashboard = () => {
   const handleEditInvoice = (invoiceId: any) => {
     navigate(`/editinvoice/${invoiceId}`);
   };
+
   const handleDeleteInvoice = (invoiceId: any) => {
     axios
       .delete(`http://localhost:5000/invoice/${invoiceId}`)
-      .then((response) => {
-        setInvoice((prevInvoice) =>
-          prevInvoice.filter((invoice: any) => invoice.id !== invoiceId)
-        );
-        setVisibleInvoice((prevVisible) =>
-          prevVisible.filter((invoice: any) => invoice.id !== invoiceId)
+      .then(() => {
+        setInvoices((prevInvoices) =>
+          prevInvoices.filter((invoice: any) => invoice.id !== invoiceId)
         );
       })
       .catch((error) => {
@@ -160,22 +157,22 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {visibleInvoice.map((invoice: any, index) => (
+            {currentInvoices.map((invoice: any, index) => (
               <tr key={index}>
                 <td>{invoice.client}</td>
                 <td>{invoice.invoiceDate}</td>
                 <td>{invoice.invoiceNumber}</td>
                 <td>{invoice.dueDate}</td>
                 <td>
-                  <ActionButton onClick={() => handleViewInvoice(invoice)}>
+                  <button onClick={() => handleViewInvoice(invoice)}>
                     <VisibilityIcon />
-                  </ActionButton>
-                  <ActionButton onClick={() => handleEditInvoice(invoice.id)}>
+                  </button>
+                  <button onClick={() => handleEditInvoice(invoice.id)}>
                     <EditIcon />
-                  </ActionButton>
-                  <ActionButton onClick={() => handleDeleteInvoice(invoice.id)}>
+                  </button>
+                  <button onClick={() => handleDeleteInvoice(invoice.id)}>
                     <DeleteIcon />
-                  </ActionButton>
+                  </button>
                 </td>
               </tr>
             ))}
@@ -183,9 +180,17 @@ const Dashboard = () => {
         </ClientTable>
       </ContentSection>
 
-      {!viewAll && invoice.length > 5 && (
-        <ViewAllButton onClick={handleViewAll}>View All Invoice</ViewAllButton>
-      )}
+      <PaginationContainer>
+        {[...Array(totalPages)].map((_, index) => (
+          <PageButton
+            key={index}
+            onClick={() => handlePageChange(index + 1)}
+            disabled={currentPage === index + 1}
+          >
+            {index + 1}
+          </PageButton>
+        ))}
+      </PaginationContainer>
     </RootContainer>
   );
 };

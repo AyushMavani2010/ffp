@@ -1,16 +1,8 @@
-/** @jsxImportSource @emotion/react */
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import Header from "../components/Header";
@@ -19,15 +11,6 @@ const RootContainer = styled.div({
   width: "100%",
   padding: "20px",
   backgroundColor: "#f5f5f5",
-});
-
-const LogoutButton = styled.button({
-  backgroundColor: "#6c63ff",
-  color: "white",
-  border: "none",
-  padding: "10px 20px",
-  borderRadius: "5px",
-  cursor: "pointer",
 });
 
 const ContentSection = styled.section({
@@ -74,33 +57,32 @@ const ClientTable = styled.table({
   },
 });
 
-const ActionButton = styled.button({
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  padding: "5px",
+const PaginationContainer = styled.div({
+  display: "flex",
+  justifyContent: "center",
+  marginTop: "20px",
 });
 
-const ViewAllButton = styled.button({
-  display: "block",
-  margin: "20px auto",
-  padding: "10px 20px",
+const PageButton = styled.button({
+  margin: "0 5px",
+  padding: "5px 10px",
   backgroundColor: "#6c63ff",
   color: "white",
   border: "none",
   borderRadius: "5px",
   cursor: "pointer",
+  "&:disabled": {
+    backgroundColor: "#ccc",
+    cursor: "not-allowed",
+  },
 });
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [cookies, , removeCookie] = useCookies(["token"]);
   const [clients, setClients] = useState([]);
-  const [updateClients, setUpdateClients] = useState([]);
-  const [visibleClients, setVisibleClients] = useState([]);
-  const [viewAll, setViewAll] = useState(false);
-  const [client, setClient] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const clientsPerPage = 5;
 
   const handleLogout = () => {
     removeCookie("token");
@@ -112,39 +94,41 @@ const Dashboard = () => {
       .get("http://localhost:5000/client")
       .then((response) => {
         setClients(response.data);
-        setVisibleClients(response.data.slice(0, 5));
       })
       .catch((error) => {
         console.error("Error fetching client data:", error);
       });
   }, []);
 
-  const handleViewAll = () => {
-    setViewAll(true);
-    setVisibleClients(clients);
+  const totalPages = Math.ceil(clients.length / clientsPerPage);
+  const indexOfLastClient = currentPage * clientsPerPage;
+  const indexOfFirstClient = indexOfLastClient - clientsPerPage;
+  const currentClients = clients.slice(indexOfFirstClient, indexOfLastClient);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
 
   const handleDeleteClient = (clientId: any) => {
     axios
       .delete(`http://localhost:5000/client/${clientId}`)
-      .then((response) => {
-        setClient((prevInvoice) =>
-          prevInvoice.filter((client: any) => client.id !== clientId)
-        );
-        setVisibleClients((prevVisible) =>
-          prevVisible.filter((client: any) => client.id !== clientId)
+      .then(() => {
+        setClients((prevClients) =>
+          prevClients.filter((client: any) => client.id !== clientId)
         );
       })
       .catch((error) => {
-        console.error("Error deleting invoice:", error);
+        console.error("Error deleting client:", error);
       });
   };
+
   const handleClientUpdate = (clientId: string) => {
     const client = clients.find((client: any) => client.id === clientId);
     if (client) {
       navigate("/editclient", { state: { client } });
     }
   };
+
   return (
     <RootContainer>
       <Header />
@@ -168,19 +152,19 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {visibleClients.map((client: any, index) => (
+            {currentClients.map((client: any, index) => (
               <tr key={index}>
                 <td>{client.name}</td>
                 <td>{client.company}</td>
                 <td>{client.email}</td>
                 <td>{client.gstNumber}</td>
                 <td>
-                  <ActionButton onClick={() => handleClientUpdate(client.id)}>
+                  <button onClick={() => handleClientUpdate(client.id)}>
                     <EditIcon />
-                  </ActionButton>
-                  <ActionButton onClick={() => handleDeleteClient(client.id)}>
+                  </button>
+                  <button onClick={() => handleDeleteClient(client.id)}>
                     <DeleteIcon />
-                  </ActionButton>
+                  </button>
                 </td>
               </tr>
             ))}
@@ -188,9 +172,17 @@ const Dashboard = () => {
         </ClientTable>
       </ContentSection>
 
-      {!viewAll && clients.length > 5 && (
-        <ViewAllButton onClick={handleViewAll}>View All Clients</ViewAllButton>
-      )}
+      <PaginationContainer>
+        {[...Array(totalPages)].map((_, index) => (
+          <PageButton
+            key={index}
+            onClick={() => handlePageChange(index + 1)}
+            disabled={currentPage === index + 1}
+          >
+            {index + 1}
+          </PageButton>
+        ))}
+      </PaginationContainer>
     </RootContainer>
   );
 };

@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import styled from "@emotion/styled";
 
 const InvoiceContainer = styled.div({
-  maxWidth: "800px",
+  width: "90%",
   margin: "40px auto",
   padding: "20px",
   backgroundColor: "#ffffff",

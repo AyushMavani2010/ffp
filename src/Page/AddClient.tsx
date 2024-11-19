@@ -1,16 +1,17 @@
 import styled from "@emotion/styled";
 import React from "react";
+import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { TextField } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
+import { jwtDecode } from "jwt-decode";
 
-const RootContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-`;
+const RootContainer = styled.div({
+  width: "100%",
+  padding: "20px",
+  backgroundColor: "#f5f5f5",
+});
 
 const FormContainer = styled.form`
   display: flex;
@@ -43,6 +44,11 @@ const SubmitButton = styled.button`
     background-color: #0056b3;
   }
 `;
+const Root = styled.div({
+  width: "100%",
+  padding: "20px",
+  backgroundColor: "#f5f5f5",
+});
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -55,6 +61,18 @@ const AddClient = () => {
   const onSubmit = (data: any) => {
     const { email, name, company, companyEmail, companyAddress, gstNumber } =
       data;
+    const token = localStorage.getItem("token");
+    let userId = "";
+
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        console.log("Decoded Token:", decodedToken);
+        userId = decodedToken.id;
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
 
     const userData = {
       email,
@@ -63,6 +81,7 @@ const AddClient = () => {
       companyEmail,
       companyAddress,
       gstNumber,
+      userId,
     };
 
     axios
@@ -86,6 +105,7 @@ const AddClient = () => {
 
   return (
     <RootContainer>
+      <Header />
       <FormContainer onSubmit={handleSubmit(onSubmit)}>
         <Title>Add Client</Title>
 
@@ -107,7 +127,9 @@ const AddClient = () => {
               label="Email"
               error={!!errors.email}
               helperText={
-                errors.email?.message ? String(errors.email?.message) : undefined
+                errors.email?.message
+                  ? String(errors.email?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -147,7 +169,9 @@ const AddClient = () => {
               label="Company Name"
               error={!!errors.company}
               helperText={
-                errors.company?.message ? String(errors.company?.message) : undefined
+                errors.company?.message
+                  ? String(errors.company?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -173,7 +197,9 @@ const AddClient = () => {
               label="Company Email"
               error={!!errors.companyEmail}
               helperText={
-                errors.companyEmail?.message ? String(errors.companyEmail?.message) : undefined
+                errors.companyEmail?.message
+                  ? String(errors.companyEmail?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -193,7 +219,9 @@ const AddClient = () => {
               label="Company Address"
               error={!!errors.companyAddress}
               helperText={
-                errors.companyAddress?.message ? String(errors.companyAddress?.message) : undefined
+                errors.companyAddress?.message
+                  ? String(errors.companyAddress?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"
@@ -213,7 +241,9 @@ const AddClient = () => {
               label="GST Number"
               error={!!errors.gstNumber}
               helperText={
-                errors.gstNumber?.message ? String(errors.gstNumber?.message) : undefined
+                errors.gstNumber?.message
+                  ? String(errors.gstNumber?.message)
+                  : undefined
               }
               fullWidth
               margin="normal"

@@ -13,14 +13,13 @@ import {
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import Header from "../components/Header";
 
-const RootContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-`;
-
+const RootContainer = styled.div({
+  width: "100%",
+  padding: "20px",
+  backgroundColor: "#f5f5f5",
+});
 const FormContainer = styled.form`
   display: flex;
   flex-direction: column;
@@ -100,6 +99,7 @@ const EditInvoice = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <RootContainer>
+      <Header />
         <FormContainer onSubmit={handleSubmit}>
           <Title>Edit Invoice</Title>
 

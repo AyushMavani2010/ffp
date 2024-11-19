@@ -93,7 +93,6 @@ const Registraion = () => {
     <RootContainer>
       <RootChild>
         <Heading>Registration</Heading>
-        {/* Username */}
         <ChildDiv>
           <InputContainer>
             <div style={{ display: "flex", marginLeft: "20px" }}>
@@ -111,7 +110,6 @@ const Registraion = () => {
             </div>
           </InputContainer>
         </ChildDiv>
-        {/* Email */}
         <ChildDiv>
           <InputContainer>
             <div style={{ display: "flex", marginLeft: "20px" }}>
@@ -129,7 +127,6 @@ const Registraion = () => {
             </div>
           </InputContainer>
         </ChildDiv>
-        {/* Password */}
         <ChildDiv>
           <InputContainer>
             <div style={{ display: "flex", marginLeft: "20px" }}>
@@ -148,7 +145,6 @@ const Registraion = () => {
             </div>
           </InputContainer>
         </ChildDiv>
-        {/* Confirm Password */}
         <ChildDiv>
           <InputContainer>
             <div style={{ display: "flex", marginLeft: "20px" }}>
@@ -167,7 +163,6 @@ const Registraion = () => {
             </div>
           </InputContainer>
         </ChildDiv>
-        {/* Gender */}
         <ChildDiv>
           <InputContainer>
             <div style={{ display: "flex", marginLeft: "20px" }}>
@@ -177,7 +172,7 @@ const Registraion = () => {
               <select
                 style={{
                   height: "35px",
-                  width: "400px",
+                  width: "190px",
                   borderRadius: "20px",
                   paddingLeft: "10px",
                   border: "none",
@@ -195,7 +190,6 @@ const Registraion = () => {
             </div>
           </InputContainer>
         </ChildDiv>
-        {/* Buttons */}
         <ChildDiv>
           <div>
             <Button
@@ -208,20 +202,6 @@ const Registraion = () => {
               color="white"
               border="none"
               onClick={handleRegistration}
-            />
-          </div>
-          <div style={{ paddingLeft: "15px" }}>
-            <Button
-              width="124px"
-              height="52px"
-              BgColor="rgba(145, 129, 244, 1)"
-              borderRadius="20px"
-              name="Login Now"
-              color="white"
-              border="none"
-              onClick={() => {
-                navigate("/login");
-              }}
             />
           </div>
         </ChildDiv>
