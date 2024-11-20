@@ -23,6 +23,8 @@ import AddCompany from "./Page/AddCompany";
 import EditClient from "./Page/EditClient";
 import EditInvoice from "./Page/EditInvoice";
 import { jwtDecode } from "jwt-decode";
+import store from "./redux/apii/store";
+import { Provider } from "react-redux";
 
 const App = () => {
   const [cookies] = useCookies(["token"]);
@@ -47,7 +49,7 @@ const App = () => {
   useEffect(() => {
     const checkCompanyAndRedirect = async () => {
       setLoading(true);
-  
+
       const token = localStorage.getItem("token");
       try {
         if (!token) {
@@ -67,11 +69,11 @@ const App = () => {
               return null;
             }
           })();
-  
+
           if (userId) {
             const companyData = await fetchCompanyData(userId);
             console.log("Company Data:", companyData);
-  
+
             if (companyData && companyData.length > 0) {
               setHasCompany(true);
             } else {
@@ -88,10 +90,10 @@ const App = () => {
         setLoading(false);
       }
     };
-  
+
     checkCompanyAndRedirect();
   }, [location.pathname, navigate]);
-  
+
   useEffect(() => {
     if (!loading) {
       if (!token) {
@@ -117,35 +119,35 @@ const App = () => {
     }
   }, [loading, token, hasCompany, location.pathname, navigate]);
 
- 
-
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        width: "100%",
-      }}
-    >
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Registration />} />
-        <Route path="/clients" element={<Clients />} />
-        <Route path="/dashboard" element={<MainDashBoard />} />
-        <Route path="/invoicedashboard" element={<InvoiceDashBoard />} />
-        <Route path="/addinvoice" element={<AddInvoice />} />
-        <Route path="/invoice" element={<InvoicePage />} />
-        <Route path="/addclient" element={<AddClient />} />
-        <Route path="/addcompany" element={<AddCompany />} />
-        <Route path="/editclient" element={<EditClient />} />
-        <Route path="/editinvoice/:invoiceId" element={<EditInvoice />} />
-        <Route path="*" element={<Navigate to="/dashboard" />} />
-      </Routes>
-    </div>
+    <Provider store={store}>
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          width: "100%",
+        }}
+      >
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Registration />} />
+          <Route path="/clients" element={<Clients />} />
+          <Route path="/dashboard" element={<MainDashBoard />} />
+          <Route path="/invoicedashboard" element={<InvoiceDashBoard />} />
+          <Route path="/addinvoice" element={<AddInvoice />} />
+          <Route path="/invoice" element={<InvoicePage />} />
+          <Route path="/addclient" element={<AddClient />} />
+          <Route path="/addcompany" element={<AddCompany />} />
+          <Route path="/editclient" element={<EditClient />} />
+          <Route path="/editinvoice/:invoiceId" element={<EditInvoice />} />
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      </div>
+    </Provider>
   );
 };
 

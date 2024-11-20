@@ -4,6 +4,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import Header from "../components/Header";
+import { jwtDecode } from "jwt-decode";
 
 import {
   BrowserRouter as Router,
@@ -115,8 +116,20 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    let userId = "";
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        console.log("Decoded Token:", decodedToken);
+        userId = decodedToken.id;
+        console.log("userId:", userId); // Log userId to check
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
     axios
-      .get("http://localhost:5000/client")
+      .get(`http://localhost:5000/client/userId?user_id=${userId}`)
       .then((response) => {
         setClients(response.data);
         setVisibleClients(response.data.slice(0, 5));
@@ -126,16 +139,31 @@ const Dashboard = () => {
       });
   }, []);
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/invoice")
-      .then((response) => {
-        setInvoice(response.data);
-        setVisibleInvoice(response.data.slice(0, 5));
-      })
-      .catch((error) => {
-        console.error("Error fetching client data:", error);
-      });
+    const token = localStorage.getItem("token");
+    let userId = "";
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        console.log("Decoded Token:", decodedToken);
+        userId = decodedToken.id;
+        console.log("userId:", userId); 
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  
+    if (userId) {
+      axios
+        .get(`http://localhost:5000/invoice/userId?user_id=${userId}`)
+        .then((response) => {
+          setInvoice(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching invoice data:", error);
+        });
+    }
   }, []);
+  
 
   const handleViewInvoice = (invoice: any) => {
     navigate("/invoice", { state: { invoice } });
@@ -240,7 +268,7 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {visibleInvoice.map((invoice: any, index) => (
+              {invoice.map((invoice: any, index) => (
                 <tr key={index}>
                   <td>{invoice.client}</td>
                   <td>{invoice.invoiceDate}</td>

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import Header from "../components/Header";
+import { jwtDecode } from "jwt-decode";
 
 const RootContainer = styled.div({
   width: "100%",
@@ -90,14 +91,30 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/client")
-      .then((response) => {
-        setClients(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching client data:", error);
-      });
+    const token = localStorage.getItem("token");
+    let userId = "";
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        console.log("Decoded Token:", decodedToken);
+        userId = decodedToken.id;
+        console.log("userId:", userId); 
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  
+    if (userId) {
+      axios
+        .get(`http://localhost:5000/client/userId?user_id=${userId}`)
+        .then((response) => {
+          console.log("API Response:", response.data); 
+          setClients(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching client data:", error);
+        });
+    }
   }, []);
 
   const totalPages = Math.ceil(clients.length / clientsPerPage);

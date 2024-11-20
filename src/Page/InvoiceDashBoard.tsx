@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { jwtDecode } from "jwt-decode"; // For decoding JWT tokens
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,7 +29,7 @@ const TableHeader = styled.div({
   alignItems: "center",
 });
 
-const AddClientButton = styled.button({
+const AddInvoiceButton = styled.button({
   backgroundColor: "#6c63ff",
   color: "white",
   border: "none",
@@ -80,34 +81,47 @@ const PageButton = styled.button({
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [cookies, , removeCookie] = useCookies(["token"]);
-  const [invoices, setInvoices] = useState([]);
+  const dispatch = useDispatch();
+  const [invoices, setInvoices] = useState<any[]>([]); 
+  const [status, setStatus] = useState<string>("loading");
   const [currentPage, setCurrentPage] = useState(1);
   const invoicesPerPage = 5;
 
-  const handleLogout = () => {
-    removeCookie("token");
-    navigate("/login");
-  };
-
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/invoice")
-      .then((response) => {
-        setInvoices(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching invoice data:", error);
-      });
-  }, []);
+    const token = localStorage.getItem("token");
+    let userId = "";
+
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        userId = decodedToken.id; 
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+
+    const fetchInvoices = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/invoice/userId?user_id=${userId}`
+        );
+        setInvoices(response.data); 
+        setStatus("success");
+      } catch (error) {
+        console.error("Error fetching invoices:", error);
+        setStatus("error");
+      }
+    };
+
+    if (userId) {
+      fetchInvoices(); 
+    }
+  }, [dispatch]);
 
   const totalPages = Math.ceil(invoices.length / invoicesPerPage);
   const indexOfLastInvoice = currentPage * invoicesPerPage;
   const indexOfFirstInvoice = indexOfLastInvoice - invoicesPerPage;
-  const currentInvoices = invoices.slice(
-    indexOfFirstInvoice,
-    indexOfLastInvoice
-  );
+  const currentInvoices = invoices.slice(indexOfFirstInvoice, indexOfLastInvoice);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -141,43 +155,49 @@ const Dashboard = () => {
       <ContentSection>
         <TableHeader>
           <h2>Invoice List</h2>
-          <AddClientButton onClick={() => navigate("/addinvoice")}>
+          <AddInvoiceButton onClick={() => navigate("/addinvoice")}>
             Add Invoice
-          </AddClientButton>
+          </AddInvoiceButton>
         </TableHeader>
 
-        <ClientTable>
-          <thead>
-            <tr>
-              <th>Client</th>
-              <th>Invoice Date</th>
-              <th>Invoice Number</th>
-              <th>Due Date</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentInvoices.map((invoice: any, index) => (
-              <tr key={index}>
-                <td>{invoice.client}</td>
-                <td>{invoice.invoiceDate}</td>
-                <td>{invoice.invoiceNumber}</td>
-                <td>{invoice.dueDate}</td>
-                <td>
-                  <button onClick={() => handleViewInvoice(invoice)}>
-                    <VisibilityIcon />
-                  </button>
-                  <button onClick={() => handleEditInvoice(invoice.id)}>
-                    <EditIcon />
-                  </button>
-                  <button onClick={() => handleDeleteInvoice(invoice.id)}>
-                    <DeleteIcon />
-                  </button>
-                </td>
+        {status === "loading" ? (
+          <p>Loading...</p>
+        ) : status === "error" ? (
+          <p>Not Any invoices.</p>
+        ) : (
+          <ClientTable>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Invoice Date</th>
+                <th>Invoice Number</th>
+                <th>Due Date</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </ClientTable>
+            </thead>
+            <tbody>
+              {currentInvoices.map((invoice: any, index) => (
+                <tr key={index}>
+                  <td>{invoice.client}</td>
+                  <td>{invoice.invoiceDate}</td>
+                  <td>{invoice.invoiceNumber}</td>
+                  <td>{invoice.dueDate}</td>
+                  <td>
+                    <button onClick={() => handleViewInvoice(invoice)}>
+                      <VisibilityIcon />
+                    </button>
+                    <button onClick={() => handleEditInvoice(invoice.id)}>
+                      <EditIcon />
+                    </button>
+                    <button onClick={() => handleDeleteInvoice(invoice.id)}>
+                      <DeleteIcon />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </ClientTable>
+        )}
       </ContentSection>
 
       <PaginationContainer>
