@@ -3,11 +3,12 @@ import styled from "@emotion/styled";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { jwtDecode } from "jwt-decode"; // For decoding JWT tokens
+import { jwtDecode } from "jwt-decode";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Header from "../components/Header";
+import ReactPaginate from "react-paginate";
 
 const RootContainer = styled.div({
   width: "100%",
@@ -82,10 +83,13 @@ const PageButton = styled.button({
 const Dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [invoices, setInvoices] = useState<any[]>([]); 
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [status, setStatus] = useState<string>("loading");
   const [currentPage, setCurrentPage] = useState(1);
   const invoicesPerPage = 5;
+  const handlePageClick = (data: { selected: number }) => {
+    setCurrentPage(data.selected);
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -94,7 +98,7 @@ const Dashboard = () => {
     if (token) {
       try {
         const decodedToken: any = jwtDecode(token);
-        userId = decodedToken.id; 
+        userId = decodedToken.id;
       } catch (error) {
         console.error("Error decoding token:", error);
       }
@@ -105,7 +109,7 @@ const Dashboard = () => {
         const response = await axios.get(
           `http://localhost:5000/invoice/userId?user_id=${userId}`
         );
-        setInvoices(response.data); 
+        setInvoices(response.data);
         setStatus("success");
       } catch (error) {
         console.error("Error fetching invoices:", error);
@@ -114,14 +118,17 @@ const Dashboard = () => {
     };
 
     if (userId) {
-      fetchInvoices(); 
+      fetchInvoices();
     }
   }, [dispatch]);
 
   const totalPages = Math.ceil(invoices.length / invoicesPerPage);
   const indexOfLastInvoice = currentPage * invoicesPerPage;
   const indexOfFirstInvoice = indexOfLastInvoice - invoicesPerPage;
-  const currentInvoices = invoices.slice(indexOfFirstInvoice, indexOfLastInvoice);
+  const currentInvoices = invoices.slice(
+    indexOfFirstInvoice,
+    indexOfLastInvoice
+  );
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -200,7 +207,7 @@ const Dashboard = () => {
         )}
       </ContentSection>
 
-      <PaginationContainer>
+      {/* <PaginationContainer>
         {[...Array(totalPages)].map((_, index) => (
           <PageButton
             key={index}
@@ -210,6 +217,24 @@ const Dashboard = () => {
             {index + 1}
           </PageButton>
         ))}
+      </PaginationContainer> */}
+
+      <PaginationContainer>
+        <ReactPaginate
+          previousLabel={"Previous"}
+          nextLabel={"Next"}
+          breakLabel={"..."}
+          pageCount={Math.ceil(invoices.length / invoicesPerPage)}
+          marginPagesDisplayed={2}
+          pageRangeDisplayed={3}
+          onPageChange={handlePageClick}
+          containerClassName={"pagination"}
+          activeClassName={"active"}
+          previousClassName={"prev"}
+          nextClassName={"next"}
+          pageClassName={"page"}
+          breakClassName={"break"}
+        />
       </PaginationContainer>
     </RootContainer>
   );

@@ -1,12 +1,16 @@
+// Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import axios from "axios";
-import Header from "../components/Header";
+import { useQuery, useMutation } from "@apollo/client"; // Use Apollo hooks
+import { GET_CLIENTS, DELETE_CLIENT } from "../Page/queries";
 import { jwtDecode } from "jwt-decode";
+import ReactPaginate from "react-paginate";
+import Header from "../components/Header";
+import { JwtPayload } from ".././types";
 
 const RootContainer = styled.div({
   width: "100%",
@@ -79,77 +83,65 @@ const PageButton = styled.button({
 });
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const [cookies, , removeCookie] = useCookies(["token"]);
-  const [clients, setClients] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const clientsPerPage = 5;
-
-  const handleLogout = () => {
-    removeCookie("token");
-    navigate("/login");
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+    const navigate = useNavigate();
+    const [cookies, , removeCookie] = useCookies(["token"]);
+  
     let userId = "";
+    const token = cookies.token;
+  
     if (token) {
       try {
-        const decodedToken: any = jwtDecode(token);
-        console.log("Decoded Token:", decodedToken);
-        userId = decodedToken.id;
-        console.log("userId:", userId); 
+        // Decode the token using the extended JwtPayload type and ensure the token conforms to JwtPayload
+        const decodedToken = jwtDecode<JwtPayload>(token); // Use the custom JwtPayload type
+        userId = decodedToken.id; // Now TypeScript knows the token has an 'id' field
       } catch (error) {
         console.error("Error decoding token:", error);
       }
     }
   
-    if (userId) {
-      axios
-        .get(`http://localhost:5000/client/userId?user_id=${userId}`)
-        .then((response) => {
-          console.log("API Response:", response.data); 
-          setClients(response.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching client data:", error);
-        });
-    }
-  }, []);
-
-  const totalPages = Math.ceil(clients.length / clientsPerPage);
-  const indexOfLastClient = currentPage * clientsPerPage;
-  const indexOfFirstClient = indexOfLastClient - clientsPerPage;
-  const currentClients = clients.slice(indexOfFirstClient, indexOfLastClient);
-
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const handleDeleteClient = (clientId: any) => {
-    axios
-      .delete(`http://localhost:5000/client/${clientId}`)
-      .then(() => {
-        setClients((prevClients) =>
-          prevClients.filter((client: any) => client.id !== clientId)
-        );
-      })
-      .catch((error) => {
-        console.error("Error deleting client:", error);
-      });
-  };
-
-  const handleClientUpdate = (clientId: string) => {
-    const client = clients.find((client: any) => client.id === clientId);
-    if (client) {
-      navigate("/editclient", { state: { client } });
-    }
-  };
+    // Fetching clients using Apollo Client's useQuery hook
+    const { data, loading, error, refetch } = useQuery(GET_CLIENTS, {
+      variables: { userId }, // Passing the decoded userId
+      skip: !cookies.token, // Skip query if token is missing
+    });
+  
+    // Mutation hook for deleting a client
+    const [deleteClient] = useMutation(DELETE_CLIENT, {
+      onCompleted: () => refetch(), // Refetch after deleting
+    });
+  
+    const handleLogout = () => {
+      removeCookie("token");
+      navigate("/login");
+    };
+  
+    const handleDeleteClient = (clientId: string) => {
+      deleteClient({ variables: { id: clientId } });
+    };
+  
+    const handleClientUpdate = (clientId: string) => {
+      const client = data?.clients.find((client: any) => client.id === clientId);
+      if (client) {
+        navigate("/editclient", { state: { client } });
+      }
+    };
+  
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error.message}</p>;
+  
+    // Pagination logic
+    const currentPage = 1;
+    const clientsPerPage = 5;
+    const indexOfLastClient = currentPage * clientsPerPage;
+    const indexOfFirstClient = indexOfLastClient - clientsPerPage;
+    const currentClients = data.clients.slice(
+      indexOfFirstClient,
+      indexOfLastClient
+    );
 
   return (
     <RootContainer>
       <Header />
-
       <ContentSection>
         <TableHeader>
           <h2>Client List</h2>
@@ -169,7 +161,7 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {currentClients.map((client: any, index) => (
+            {currentClients.map((client: any, index: number) => (
               <tr key={index}>
                 <td>{client.name}</td>
                 <td>{client.company}</td>
@@ -190,15 +182,7 @@ const Dashboard = () => {
       </ContentSection>
 
       <PaginationContainer>
-        {[...Array(totalPages)].map((_, index) => (
-          <PageButton
-            key={index}
-            onClick={() => handlePageChange(index + 1)}
-            disabled={currentPage === index + 1}
-          >
-            {index + 1}
-          </PageButton>
-        ))}
+        {/* Pagination controls can be added here */}
       </PaginationContainer>
     </RootContainer>
   );

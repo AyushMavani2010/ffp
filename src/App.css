@@ -36,3 +36,40 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+.pagination {
+  display: flex;
+  list-style: none;
+  justify-content: center;
+  padding: 0;
+}
+
+.pagination .page,
+.pagination .prev,
+.pagination .next,
+.pagination .break {
+  margin: 0 5px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #6c63ff;
+  text-align: center;
+}
+
+.pagination .active {
+  background-color: #6c63ff;
+  color: white;
+  border: none;
+}
+
+.pagination .prev,
+.pagination .next {
+  font-weight: bold;
+}
+
+.pagination .break {
+  cursor: default;
+}

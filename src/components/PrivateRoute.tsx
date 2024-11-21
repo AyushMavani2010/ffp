@@ -37,7 +37,6 @@ const PrivateRoute = ({ element, ...rest }: any) => {
     }
   }, [token]);
 
-  // This function simulates fetching company data for the user
   const fetchCompanyData = async (userId: any) => {
     try {
       const response = await axios.get("http://localhost:5000/company/user", {
@@ -52,12 +51,11 @@ const PrivateRoute = ({ element, ...rest }: any) => {
 
   if (loading) return <div>Loading...</div>;
 
-  // If the user is not authenticated, redirect to login page
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // If user doesn't have a company, redirect to add company page
   if (!hasCompany && !rest.path.includes("/addcompany")) {
     return <Navigate to="/addcompany" replace />;
   }

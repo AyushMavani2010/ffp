@@ -1,15 +1,17 @@
-import "./App.css";
+// App.tsx
+import React from "react";
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   Navigate,
-  useNavigate,
-  useLocation,
 } from "react-router-dom";
-import axios from "axios";
 import { useCookies } from "react-cookie";
-import { useEffect, useState } from "react";
+import { ApolloProvider } from "@apollo/client"; // Import ApolloProvider
+import client from "./Page/ApolloClient"; // Import Apollo Client configuration
+
+import { Provider } from "react-redux";
+import store from "./redux/apii/store";
 
 import Login from "./Page/Login";
 import Registration from "./Page/Registraion";
@@ -22,132 +24,67 @@ import InvoicePage from "./Page/InvoicePage";
 import AddCompany from "./Page/AddCompany";
 import EditClient from "./Page/EditClient";
 import EditInvoice from "./Page/EditInvoice";
-import { jwtDecode } from "jwt-decode";
-import store from "./redux/apii/store";
-import { Provider } from "react-redux";
+
+import PrivateRoute from "./components/PrivateRoute";
+import PublicRoute from "./components/PublicRoute";
 
 const App = () => {
-  const [cookies] = useCookies(["token"]);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const token = cookies.token;
-  const [hasCompany, setHasCompany] = useState(false);
-  if (token) localStorage.setItem("token", token);
-
-  const fetchCompanyData = async (userId: any) => {
-    try {
-      const response = await axios.get("http://localhost:5000/company/user", {
-        params: { user_id: userId },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching company data:", error);
-      return null;
-    }
-  };
-  useEffect(() => {
-    const checkCompanyAndRedirect = async () => {
-      setLoading(true);
-
-      const token = localStorage.getItem("token");
-      try {
-        if (!token) {
-          if (
-            location.pathname !== "/login" &&
-            location.pathname !== "/register"
-          ) {
-            navigate("/login", { replace: true });
-          }
-        } else {
-          const userId = (() => {
-            try {
-              const decodedToken: any = jwtDecode(token);
-              return decodedToken?.id || decodedToken?.userId;
-            } catch (error) {
-              console.error("Error decoding token:", error);
-              return null;
-            }
-          })();
-
-          if (userId) {
-            const companyData = await fetchCompanyData(userId);
-            console.log("Company Data:", companyData);
-
-            if (companyData && companyData.length > 0) {
-              setHasCompany(true);
-            } else {
-              setHasCompany(false);
-            }
-          } else {
-            console.error("Invalid or missing userId in token.");
-            navigate("/login", { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error("Error during redirection:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkCompanyAndRedirect();
-  }, [location.pathname, navigate]);
-
-  useEffect(() => {
-    if (!loading) {
-      if (!token) {
-        if (
-          location.pathname !== "/login" &&
-          location.pathname !== "/register"
-        ) {
-          navigate("/login", { replace: true });
-        }
-      } else if (hasCompany) {
-        if (
-          location.pathname === "/login" ||
-          location.pathname === "/register" ||
-          location.pathname === "/addcompany"
-        ) {
-          navigate("/dashboard", { replace: true });
-        }
-      } else {
-        if (location.pathname !== "/addcompany") {
-          navigate("/addcompany", { replace: true });
-        }
-      }
-    }
-  }, [loading, token, hasCompany, location.pathname, navigate]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <Provider store={store}>
-      <div
-        style={{
-          display: "flex",
-          height: "100vh",
-          width: "100%",
-        }}
-      >
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Registration />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/dashboard" element={<MainDashBoard />} />
-          <Route path="/invoicedashboard" element={<InvoiceDashBoard />} />
-          <Route path="/addinvoice" element={<AddInvoice />} />
-          <Route path="/invoice" element={<InvoicePage />} />
-          <Route path="/addclient" element={<AddClient />} />
-          <Route path="/addcompany" element={<AddCompany />} />
-          <Route path="/editclient" element={<EditClient />} />
-          <Route path="/editinvoice/:invoiceId" element={<EditInvoice />} />
-          <Route path="*" element={<Navigate to="/dashboard" />} />
-        </Routes>
-      </div>
-    </Provider>
+    <ApolloProvider client={client}>
+      {" "}
+      {/* Wrap your app with ApolloProvider */}
+      <Provider store={store}>
+        <div style={{ display: "flex", height: "100vh", width: "100%" }}>
+          <Routes>
+            <Route
+              path="/login"
+              element={<PublicRoute element={<Login />} />}
+            />
+            <Route
+              path="/register"
+              element={<PublicRoute element={<Registration />} />}
+            />
+            <Route
+              path="/dashboard"
+              element={<PrivateRoute element={<MainDashBoard />} />}
+            />
+            <Route
+              path="/clients"
+              element={<PrivateRoute element={<Clients />} />}
+            />
+            <Route
+              path="/invoicedashboard"
+              element={<PrivateRoute element={<InvoiceDashBoard />} />}
+            />
+            <Route
+              path="/addinvoice"
+              element={<PrivateRoute element={<AddInvoice />} />}
+            />
+            <Route
+              path="/invoice"
+              element={<PrivateRoute element={<InvoicePage />} />}
+            />
+            <Route
+              path="/addclient"
+              element={<PrivateRoute element={<AddClient />} />}
+            />
+            <Route
+              path="/addcompany"
+              element={<PrivateRoute element={<AddCompany />} />}
+            />
+            <Route
+              path="/editclient"
+              element={<PrivateRoute element={<EditClient />} />}
+            />
+            <Route
+              path="/editinvoice/:invoiceId"
+              element={<PrivateRoute element={<EditInvoice />} />}
+            />
+            <Route path="*" element={<Navigate to="/dashboard" />} />
+          </Routes>
+        </div>
+      </Provider>
+    </ApolloProvider>
   );
 };
 
